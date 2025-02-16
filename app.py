@@ -63,4 +63,4 @@ def delete_vehicle(id):
     return jsonify({'message': 'Vehicle deleted successfully'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=8080)
