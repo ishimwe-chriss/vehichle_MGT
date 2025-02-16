@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --color-navy: #0A1929;
+            --color-dark-teal: #1B3B4B;
+            --color-teal: #436E6F;
+            --color-light-teal: #93BFB7;
+            --color-gray: #E5E7E9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--color-gray);
+            color: var(--color-navy);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            background: var(--color-navy);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--color-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-teal);
+        }
+
+        .btn {
+            background: var(--color-teal);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--color-dark-teal);
+            transform: translateY(-1px);
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background: var(--color-light-teal);
+        }
+
+        .btn-delete {
+            background: #dc3545;
+        }
+
+        .table-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: var(--color-navy);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        th:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-gray);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(147, 191, 183, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            z-index: 1001;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--color-navy);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-navy);
+            padding: 0.5rem;
+        }
+
+        .modal-close:hover {
+            color: var(--color-teal);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            background: var(--color-gray);
+            color: var(--color-navy);
+        }
+
+        .btn-secondary:hover {
+            background: #d0d3d4;
+        }
+
+        /* Notification Styles */
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .notification {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 320px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification-success {
+            border-top: 4px solid #4CAF50;
+        }
+
+        .notification-error {
+            border-top: 4px solid #f44336;
+        }
+
+        .notification-confirm {
+            border-top: 4px solid #2196F3;
+        }
+
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-success .notification-icon {
+            background-color: #4CAF50;
+        }
+
+        .notification-error .notification-icon {
+            background-color: #f44336;
+        }
+
+        .notification-confirm .notification-icon {
+            background-color: #2196F3;
+        }
+
+        .notification-icon i {
+            color: white;
+            font-size: 24px;
+        }
+
+        .notification-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-message {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .notification-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .notification-btn {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .notification-btn-primary {
+            background: var(--color-teal);
+            color: white;
+            border-color: var(--color-teal);
+        }
+
+        .notification-btn-secondary {
+            background: white;
+            color: var(--color-navy);
+        }
+
+        .notification-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .slide-out {
+            animation: slideOut 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vehicle Management System</h1>
+        </div>
+
+        <div class="content-grid">
+            <div class="form-card">
+                <h2 style="margin-bottom: 1.5rem">Add New Vehicle</h2>
+                <form id="vehicle-form">
+                    <div class="form-group">
+                        <input type="text" id="make" class="form-control" placeholder="Make" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="model" class="form-control" placeholder="Model" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="year" class="form-control" placeholder="Year" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="price" class="form-control" placeholder="Price ($)" required>
+                    </div>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-plus"></i> Add Vehicle
+                    </button>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Make</th>
+                            <th>Model</th>
+                            <th>Year</th>
+                            <th>Price ($)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehicle in vehicles %}
+                        <tr>
+                            <td>{{ vehicle.id }}</td>
+                            <td>{{ vehicle.make }}</td>
+                            <td>{{ vehicle.model }}</td>
+                            <td>{{ vehicle.year }}</td>
+                            <td>{{ vehicle.price }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-icon btn-edit" onclick="editVehicle({{ vehicle.id }}, '{{ vehicle.make }}', '{{ vehicle.model }}', {{ vehicle.year }}, {{ vehicle.price }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-icon btn-delete" onclick="deleteVehicle({{ vehicle.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Vehicle</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-vehicle-form">
+                    <input type="hidden" id="edit-id">
+                    <div class="form-group">
+                        <input type="text" id="edit-make" class="form-control" placeholder="Make" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="edit-model" class="form-control" placeholder="Model" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="edit-year" class="form-control" placeholder="Year" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="edit-price" class="form-control" placeholder="Price ($)" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <script>
+        // Notification System
+        const notifications = {
+            show: function(options) {
+                const container = document.getElementById('notificationContainer');
+                const overlay = document.createElement('div');
+                overlay.className = 'notification-overlay';
+                
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${options.type} slide-in`;
+                
+                let iconClass = options.type === 'success' ? 'check' : 
+                               options.type === 'error' ? 'times' : 
+                               'question';
+                
+                notification.innerHTML = `
+                    <div class="notification-icon">
+                        <i class="fas fa-${iconClass}"></i>
+                    </div>
+                    <div class="notification-title">${options.title}</div>
+                    <div class="notification-message">${options.message}</div>
+                    <div class="notification-buttons">
+                        ${options.buttons.map(btn => `
+                            <button class="notification-btn ${btn.primary ? 'notification-btn-primary' : 'notification-btn-secondary'}">${btn.text}</button>
+                        `).join('')}
+                    </div>
+                `;
+
+                overlay.appendChild(notification);
+                container.appendChild(overlay);
+
+                // Add click handlers
+                const buttons = notification.querySelectorAll('.notification-btn');
+                buttons.forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        if (options.buttons[index].onClick) {
+                            options.buttons[index].onClick();
+                        }
+                        this.close(overlay);
+                    });
+                });
+
+                return overlay;
+            },
+
+            success: function(message, title = 'Success!') {
+                return this.show({
+                    type: 'success',
+                    title: title,
+                    message: message,
+                    buttons: [{
+                        text: 'Got it!',
+                        primary: true,
+                        onClick: () => {}
+                    }]
+                });
+            },
+
+            error: function(message, title = 'Whoops!') {
+                return this.show({
+                    type: 'error',
+                    title: title,
+                    message: message,
+                    buttons: [{
+                        text: 'Try Again',
+                        primary: true,
+                        onClick: () => {}
+                    }]
+                });
+            },
+
+            confirm: function(message, onConfirm, onCancel, title = 'Are you sure?') {
+                return this.show({
+                    type: 'confirm',
+                    title: title,
+                    message: message,
+                    buttons: [
+                        {
+                            text: 'Cancel',
+                            primary: false,
+                            onClick: onCancel || (() => {})
+                        },
+                        {
+                            text: 'Confirm',
+                            primary: true,
+                            onClick: onConfirm
+                        }
+                    ]
+                });
+            },
+
+            close: function(overlay) {
+                const notification = overlay.querySelector('.notification');
+                notification.classList.remove('slide-in');
+                notification.classList.add('slide-out');
+                setTimeout(() => {
+                    overlay.remove();
+                }, 300);
+            }
+        };
+
+        // Form Handlers
+        document.getElementById('vehicle-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const make = document.getElementById('make').value;
+            const model = document.getElementById('model').value;
+            const year = document.getElementById('year').value;
+            const price = document.getElementById('price').value;
+
+            fetch('/vehicles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ make, model, year, price })
+            })
+            .then(response => response.json())
+            .then(data => {
+                notifications.success('Your vehicle has been added successfully.');
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(error => {
+                notifications.error('Failed to add vehicle. Please try again.');
+            });
+        });
+
+        // Edit Vehicle Handler
+        function editVehicle(id, make, model, year, price) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-make').value = make;
+            document.getElementById('edit-model').value = model;
+            document.getElementById('edit-year').value = year;
+            document.getElementById('edit-price').value = price;
+
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'block';
+            modal.classList.add('fade-in');
+        }
+
+        // Close Modal Handler
+        function closeModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.add('fade-out');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.classList.remove('fade-out', 'fade-in');
+            }, 300);
+        }
+
+        // Delete Vehicle Handler
+        function deleteVehicle(id) {
+            notifications.confirm(
+                'This action cannot be undone.',
+                () => {
+                    fetch(`/vehicles/${id}`, { method: 'DELETE' })
+                        .then(response => response.json())
+                        .then(data => {
+                            notifications.success('Vehicle has been deleted.');
+                            setTimeout(() => location.reload(), 1500);
+                        })
+                        .catch(error => {
+                            notifications.error('Failed to delete vehicle. Please try again.');
+                        });
+                }
+            );
+        }
+
+        // Edit Form Submit Handler
+        document.getElementById('edit-vehicle-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const make = document.getElementById('edit-make').value;
+            const model = document.getElementById('edit-model').value;
+            const year = document.getElementById('edit-year').value;
+            const price = document.getElementById('edit-price').value;
+
+            fetch(`/vehicles/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ make, model, year, price })
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeModal();
+                notifications.success('Vehicle has been updated successfully.');
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(error => {
+                notifications.error('Failed to update vehicle. Please try again.');
+            });
+        });
+
+        // Close Modal When Clicking Outside
+        document.getElementById('editModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
