@@ -24,9 +24,9 @@ jobs:
       # Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/flask-todo:latest .
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/vehicle:latest .
 
       # Push the image to Docker Hub
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/flask-todo:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/vehicle:latest
